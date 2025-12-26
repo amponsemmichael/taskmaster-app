@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using TaskMaster.Models;
+
 namespace TaskMaster.Data;
 
 public class AppDbContext : DbContext

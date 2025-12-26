@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskMaster.DTOs.Auth;
-using TaskMaster.Services.Interfaces;
+using TaskMaster.Services;
 
 namespace TaskMaster.Controllers;
 

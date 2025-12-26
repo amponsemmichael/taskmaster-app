@@ -1,4 +1,6 @@
-namespace TaskMaster.Services.Interfaces;
+using TaskMaster.DTOs.Auth;
+
+namespace TaskMaster.Services;
 
 public interface IAuthService
 {

@@ -6,7 +6,6 @@ using System.Text;
 using TaskMaster.Data;
 using TaskMaster.DTOs.Auth;
 using TaskMaster.Models;
-using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Services;
 
