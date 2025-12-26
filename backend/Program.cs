@@ -18,6 +18,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Dependency Injection
 // --------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 // --------------------
 // Authentication (JWT)
