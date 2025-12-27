@@ -1,3 +1,10 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using TaskMaster.DTOs;
+using TaskMaster.Services;
+using TaskMaster.Extensions;
+
+namespace TaskMaster.Controllers;
 [ApiController]
 [Route("api/tasks/{taskId}/comments")]
 [Authorize]
@@ -15,7 +22,7 @@ public class TaskCommentsController : ControllerBase
         Guid taskId,
         CreateCommentDto dto)
     {
-        var userId = User.GetUserId(); // your existing extension
+        var userId = User.GetUserId(); 
         await _service.AddCommentAsync(taskId, userId, dto);
         return NoContent();
     }

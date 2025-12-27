@@ -1,3 +1,9 @@
+
+using TaskMaster.DTOs;
+using TaskMaster.Models;
+using TaskMaster.Repositories.Interfaces;
+
+namespace TaskMaster.Services;
 public class TaskCommentService
 {
     private readonly ITaskCommentRepository _commentRepo;

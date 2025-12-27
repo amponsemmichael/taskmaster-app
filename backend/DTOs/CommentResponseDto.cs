@@ -1,3 +1,4 @@
+namespace TaskMaster.DTOs;
 public record CommentResponseDto(
     Guid Id,
     string Content,
