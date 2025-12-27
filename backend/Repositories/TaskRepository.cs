@@ -42,4 +42,28 @@ public class TaskRepository : ITaskRepository
         _context.Tasks.Remove(task);
         await _context.SaveChangesAsync();
     }
+
+    public async Task<IEnumerable<TaskItem>> FilterAsync(
+    string? status,
+    string? priority,
+    DateTime? dueBefore,
+    int page,
+    int pageSize)
+{
+    var query = _context.Tasks.AsQueryable();
+
+    if (!string.IsNullOrEmpty(status))
+        query = query.Where(t => t.Status == status);
+
+    if (!string.IsNullOrEmpty(priority))
+        query = query.Where(t => t.Priority == priority);
+
+    if (dueBefore.HasValue)
+        query = query.Where(t => t.DueDate <= dueBefore);
+
+    return await query
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .ToListAsync();
+}
 }
