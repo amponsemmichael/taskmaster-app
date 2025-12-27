@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TaskMaster.Models;
 using TaskMaster.Services.Interfaces;
+using TaskMaster.DTOs.Tasks;
 
 namespace TaskMaster.Controllers;
 
@@ -32,22 +33,22 @@ public class TasksController : ControllerBase
     }
     [HttpPut("{id}/assign")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<IActionResult> Assign(Guid id, AssignTaskDto dto)
+    public async Task<IActionResult> Assign(Guid id, AssignedTaskDto dto)
     {
         await _taskService.AssignAsync(id, dto.UserId);
         return NoContent();
     }
 
     [HttpGet("filter")]
-public async Task<IActionResult> Filter(
+    public async Task<IActionResult> Filter(
     [FromQuery] string? status,
     [FromQuery] string? priority,
     [FromQuery] DateTime? dueBefore,
     [FromQuery] int page = 1,
     [FromQuery] int pageSize = 10)
-{
+    {
     return Ok(await _taskService.FilterAsync(
         status, priority, dueBefore, page, pageSize));
-}
-}
+    }
+    }
 

@@ -1,6 +1,6 @@
 namespace TaskMaster.DTOs.Tasks;
 
-public class AssignTaskDto
+public class AssignedTaskDto
 {
     public Guid UserId { get; set; }
 }
