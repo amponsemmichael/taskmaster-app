@@ -20,7 +20,7 @@ public class TaskItem
     [Required]
     public string Status { get; set; } = "PENDING"; 
 
-    public Guid AssignedToUserId { get; set; }
+    public Guid? AssignedToUserId { get; set; }
 
     public Guid CreatedByUserId { get; set; }
 

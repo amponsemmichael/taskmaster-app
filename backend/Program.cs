@@ -8,6 +8,9 @@ using TaskMaster.Services.Interfaces;
 using TaskMaster.Repositories;              
 using TaskMaster.Repositories.Interfaces;
 
+// Configure Npgsql to handle DateTime properly
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --------------------

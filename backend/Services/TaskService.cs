@@ -23,4 +23,24 @@ public class TaskService : ITaskService
     {
         return await _taskRepository.GetAllAsync();
     }
+
+    public async Task AssignAsync(Guid taskId, Guid userId)
+{
+    var task = await _taskRepository.GetByIdAsync(taskId)
+        ?? throw new Exception("Task not found");
+
+    task.AssignedToUserId = userId;
+    await _taskRepository.UpdateAsync(task);
+}
+
+public async Task<IEnumerable<TaskItem>> FilterAsync(
+    string? status,
+    string? priority,
+    DateTime? dueBefore,
+    int page,
+    int pageSize)
+{
+    return await _taskRepository.FilterAsync(
+        status, priority, dueBefore, page, pageSize);
+}
 }
