@@ -25,4 +25,6 @@ public class TaskItem
     public Guid CreatedByUserId { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public ICollection<TaskComment> Comments { get; set; } = new List<TaskComment>();
 }
