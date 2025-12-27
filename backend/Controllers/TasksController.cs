@@ -37,4 +37,17 @@ public class TasksController : ControllerBase
         await _taskService.AssignAsync(id, dto.UserId);
         return NoContent();
     }
+
+    [HttpGet("filter")]
+public async Task<IActionResult> Filter(
+    [FromQuery] string? status,
+    [FromQuery] string? priority,
+    [FromQuery] DateTime? dueBefore,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
+{
+    return Ok(await _taskService.FilterAsync(
+        status, priority, dueBefore, page, pageSize));
 }
+}
+

@@ -32,4 +32,25 @@ public class TaskService : ITaskService
     task.AssignedToUserId = userId;
     await _taskRepository.UpdateAsync(task);
 }
+
+public async Task<IEnumerable<TaskItem>> FilterAsync(
+    string? status,
+    string? priority,
+    DateTime? dueBefore,
+    int page,
+    int pageSize)
+{
+    return await _taskRepository.FilterAsync(
+        status, priority, dueBefore, page, pageSize);
+}
+public async Task<IEnumerable<TaskItem>> FilterAsync(
+    string? status,
+    string? priority,
+    DateTime? dueBefore,
+    int page,
+    int pageSize)
+{
+    return await _taskRepository.FilterAsync(
+        status, priority, dueBefore, page, pageSize);
+}
 }
