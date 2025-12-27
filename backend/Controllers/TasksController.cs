@@ -30,4 +30,11 @@ public class TasksController : ControllerBase
     {
         return Ok(await _taskService.GetAllAsync());
     }
+    [HttpPut("{id}/assign")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<IActionResult> Assign(Guid id, AssignTaskDto dto)
+    {
+        await _taskService.AssignAsync(id, dto.UserId);
+        return NoContent();
+    }
 }

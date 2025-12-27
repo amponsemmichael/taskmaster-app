@@ -6,4 +6,5 @@ public interface ITaskService
 {
     Task<TaskItem> CreateAsync(TaskItem task, Guid userId);
     Task<IEnumerable<TaskItem>> GetAllAsync();
+    Task AssignAsync(Guid taskId, Guid userId);
 }

@@ -23,4 +23,13 @@ public class TaskService : ITaskService
     {
         return await _taskRepository.GetAllAsync();
     }
+
+    public async Task AssignAsync(Guid taskId, Guid userId)
+{
+    var task = await _taskRepository.GetByIdAsync(taskId)
+        ?? throw new Exception("Task not found");
+
+    task.AssignedToUserId = userId;
+    await _taskRepository.UpdateAsync(task);
+}
 }
