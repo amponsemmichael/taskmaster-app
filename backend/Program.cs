@@ -7,6 +7,7 @@ using TaskMaster.Services;
 using TaskMaster.Services.Interfaces;      
 using TaskMaster.Repositories;              
 using TaskMaster.Repositories.Interfaces;
+using TaskMaster.Configuration;
 
 // Configure Npgsql to handle DateTime properly
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -19,6 +20,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings"));
 
 // --------------------
 // Dependency Injection
@@ -31,6 +34,7 @@ builder.Services.AddScoped<TaskCommentService>();
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<ActivityLogService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 // --------------------
 // Authentication (JWT)
