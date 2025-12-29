@@ -30,6 +30,7 @@ builder.Services.AddScoped<ITaskCommentRepository, TaskCommentRepository>();
 builder.Services.AddScoped<TaskCommentService>();
 builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<ActivityLogService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // --------------------
 // Authentication (JWT)
