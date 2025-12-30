@@ -8,6 +8,7 @@ using TaskMaster.Services.Interfaces;
 using TaskMaster.Repositories;              
 using TaskMaster.Repositories.Interfaces;
 using TaskMaster.Configuration;
+using TaskMaster.Services.BackgroundServices;
 
 // Configure Npgsql to handle DateTime properly
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -35,6 +36,9 @@ builder.Services.AddScoped<IActivityLogRepository, ActivityLogRepository>();
 builder.Services.AddScoped<ActivityLogService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+
+// Background Services
+builder.Services.AddHostedService<DeadlineNotificationService>();
 
 // --------------------
 // Authentication (JWT)
