@@ -148,7 +148,6 @@ public class EmailService : IEmailService
                 recipientEmail,
                 subject);
             
-            // Don't throw - email failures shouldn't break the application
         }
     }
 }

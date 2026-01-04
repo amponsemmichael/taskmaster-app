@@ -10,14 +10,10 @@ using TaskMaster.Repositories.Interfaces;
 using TaskMaster.Configuration;
 using TaskMaster.Services.BackgroundServices;
 
-// Configure Npgsql to handle DateTime properly
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --------------------
-// Database
-// --------------------
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
@@ -25,9 +21,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.Configure<EmailSettings>(
     builder.Configuration.GetSection("EmailSettings"));
 
-// --------------------
-// Dependency Injection
-// --------------------
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<ITaskService, TaskService>();
@@ -38,12 +31,8 @@ builder.Services.AddScoped<ActivityLogService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-// Background Services
 builder.Services.AddHostedService<DeadlineNotificationService>();
 
-// --------------------
-// Authentication (JWT)
-// --------------------
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -64,18 +53,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-// --------------------
-// Controllers & Swagger
-// --------------------
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// --------------------
-// Middleware pipeline
-// --------------------
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
