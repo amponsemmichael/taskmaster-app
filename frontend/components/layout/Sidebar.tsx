@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CheckSquare } from "lucide-react";
+import { CircleUserRound, LayoutDashboard, CheckSquare } from "lucide-react";
 
 const links = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
+  { href: "/profile", label: "Profile", icon: CircleUserRound },
 ];
 
 export function Sidebar() {
