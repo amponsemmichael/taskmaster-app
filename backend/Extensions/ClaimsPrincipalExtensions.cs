@@ -8,9 +8,9 @@ public static class ClaimsPrincipalExtensions
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (string.IsNullOrEmpty(userId))
+        if (!Guid.TryParse(userId, out var parsedUserId))
             throw new UnauthorizedAccessException("User ID not found in token");
 
-        return Guid.Parse(userId);
+        return parsedUserId;
     }
 }

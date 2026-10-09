@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TaskMaster.Models
+namespace TaskMaster.Models;
+
+public class User
 {
-    public class User
-    {
-        [Key]
-        public Guid Id { get; set; }
+    [Key]
+    public Guid Id { get; set; }
 
     [Required]
     [EmailAddress]
@@ -18,5 +18,4 @@ namespace TaskMaster.Models
     public string Role { get; set; } = "USER";
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
-}   
+}
