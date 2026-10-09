@@ -11,9 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 
 interface CommentFormProps {
   taskId: string;
+  onAdded: () => void;
 }
 
-export function CommentForm({ taskId }: CommentFormProps) {
+export function CommentForm({ taskId, onAdded }: CommentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     register,
@@ -30,6 +31,7 @@ export function CommentForm({ taskId }: CommentFormProps) {
       await commentsApi.addComment(taskId, values);
       toast.success("Comment added.");
       reset();
+      onAdded();
     } catch {
       toast.error("Failed to add comment.");
     } finally {
