@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using TaskMaster.Data;
+using TaskMaster.Repositories.Interfaces;
 using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Services.BackgroundServices;
@@ -42,62 +41,65 @@ public class DeadlineNotificationService : BackgroundService
     private async Task CheckAndNotifyDeadlines()
     {
         using var scope = _serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var taskRepository = scope.ServiceProvider.GetRequiredService<ITaskRepository>();
         var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
-        var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
         var now = DateTime.UtcNow;
         var tomorrow = now.AddDays(1);
 
-        // Get tasks due within 24 hours
-        var tasksDueSoon = await context.Tasks
-            .Where(t => t.DueDate.HasValue &&
-                       t.DueDate.Value > now &&
-                       t.DueDate.Value <= tomorrow &&
-                       t.Status != "COMPLETED" &&
-                       t.AssignedToUserId != null)
-            .ToListAsync();
+        var tasksDueSoon = await taskRepository.GetTasksDueSoonAsync(now, tomorrow);
+        var overdueTasks = await taskRepository.GetOverdueTasksAsync(now);
 
+        // Collect all unique assigned user IDs across both lists — single user query
+        var allTasks = tasksDueSoon.Concat(overdueTasks).ToList();
+        var userIds = allTasks
+            .Where(task => task.AssignedToUserId.HasValue)
+            .Select(task => task.AssignedToUserId.GetValueOrDefault())
+            .Distinct()
+            .ToList();
+
+        if (userIds.Count == 0) return;
+
+        var users = (await userRepository.GetByIdsAsync(userIds))
+            .ToDictionary(u => u.Id);
+
+        // Send due-soon reminders
         foreach (var task in tasksDueSoon)
         {
-            var user = await userService.GetUserByIdAsync(task.AssignedToUserId!.Value);
-            if (user != null)
-            {
-                await emailService.SendTaskDueReminderEmailAsync(
-                    user.Email,
-                    task.Title,
-                    task.DueDate!.Value);
+            if (task.AssignedToUserId is not Guid assignedUserId ||
+                task.DueDate is not DateTime dueDate ||
+                !users.TryGetValue(assignedUserId, out var user))
+                continue;
 
-                _logger.LogInformation(
-                    "Sent due date reminder for task {TaskId} to user {UserEmail}",
-                    task.Id,
-                    user.Email);
-            }
+            await emailService.SendTaskDueReminderEmailAsync(
+                user.Email,
+                task.Title,
+                dueDate);
+
+            _logger.LogInformation(
+                "Sent due date reminder for task {TaskId} to user {UserEmail}",
+                task.Id,
+                user.Email);
         }
 
-        // Get overdue tasks
-        var overdueTasks = await context.Tasks
-            .Where(t => t.DueDate.HasValue &&
-                       t.DueDate.Value < now &&
-                       t.Status != "COMPLETED" &&
-                       t.AssignedToUserId != null)
-            .ToListAsync();
-
+        // Send overdue notifications
         foreach (var task in overdueTasks)
         {
-            var user = await userService.GetUserByIdAsync(task.AssignedToUserId!.Value);
-            if (user != null)
-            {
-                await emailService.SendTaskOverdueEmailAsync(
-                    user.Email,
-                    task.Title,
-                    task.DueDate!.Value);
+            if (task.AssignedToUserId is not Guid assignedUserId ||
+                task.DueDate is not DateTime dueDate ||
+                !users.TryGetValue(assignedUserId, out var user))
+                continue;
 
-                _logger.LogInformation(
-                    "Sent overdue notification for task {TaskId} to user {UserEmail}",
-                    task.Id,
-                    user.Email);
-            }
+            await emailService.SendTaskOverdueEmailAsync(
+                user.Email,
+                task.Title,
+                dueDate);
+
+            _logger.LogInformation(
+                "Sent overdue notification for task {TaskId} to user {UserEmail}",
+                task.Id,
+                user.Email);
         }
 
         if (tasksDueSoon.Any() || overdueTasks.Any())

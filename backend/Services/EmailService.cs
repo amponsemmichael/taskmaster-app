@@ -25,11 +25,12 @@ public class EmailService : IEmailService
         string taskId)
     {
         var subject = $"New Task Assigned: {taskTitle}";
+        var safeTaskTitle = WebUtility.HtmlEncode(taskTitle);
         var body = $@"
             <html>
             <body>
                 <h2>You have been assigned a new task</h2>
-                <p><strong>Task:</strong> {taskTitle}</p>
+                <p><strong>Task:</strong> {safeTaskTitle}</p>
                 <p><strong>Task ID:</strong> {taskId}</p>
                 <p>Please log in to TaskMaster to view the task details and manage your work.</p>
                 <br/>
@@ -47,11 +48,12 @@ public class EmailService : IEmailService
         DateTime dueDate)
     {
         var subject = $"Reminder: Task Due Soon - {taskTitle}";
+        var safeTaskTitle = WebUtility.HtmlEncode(taskTitle);
         var body = $@"
             <html>
             <body>
                 <h2>Task Due Date Reminder</h2>
-                <p><strong>Task:</strong> {taskTitle}</p>
+                <p><strong>Task:</strong> {safeTaskTitle}</p>
                 <p><strong>Due Date:</strong> {dueDate:MMMM dd, yyyy}</p>
                 <p>This task is due soon. Please ensure it is completed on time.</p>
                 <br/>
@@ -69,11 +71,12 @@ public class EmailService : IEmailService
         DateTime dueDate)
     {
         var subject = $"Overdue Task: {taskTitle}";
+        var safeTaskTitle = WebUtility.HtmlEncode(taskTitle);
         var body = $@"
             <html>
             <body>
                 <h2>Task Overdue</h2>
-                <p><strong>Task:</strong> {taskTitle}</p>
+                <p><strong>Task:</strong> {safeTaskTitle}</p>
                 <p><strong>Was Due:</strong> {dueDate:MMMM dd, yyyy}</p>
                 <p style=""color: red;"">This task is now overdue. Please complete it as soon as possible.</p>
                 <br/>
@@ -92,13 +95,16 @@ public class EmailService : IEmailService
         string newStatus)
     {
         var subject = $"Task Status Updated: {taskTitle}";
+        var safeTaskTitle = WebUtility.HtmlEncode(taskTitle);
+        var safeOldStatus = WebUtility.HtmlEncode(oldStatus);
+        var safeNewStatus = WebUtility.HtmlEncode(newStatus);
         var body = $@"
             <html>
             <body>
                 <h2>Task Status Changed</h2>
-                <p><strong>Task:</strong> {taskTitle}</p>
-                <p><strong>Previous Status:</strong> {oldStatus}</p>
-                <p><strong>New Status:</strong> {newStatus}</p>
+                <p><strong>Task:</strong> {safeTaskTitle}</p>
+                <p><strong>Previous Status:</strong> {safeOldStatus}</p>
+                <p><strong>New Status:</strong> {safeNewStatus}</p>
                 <br/>
                 <p>Best regards,<br/>TaskMaster Team</p>
             </body>
@@ -110,44 +116,41 @@ public class EmailService : IEmailService
 
     private async Task SendEmailAsync(string recipientEmail, string subject, string body)
     {
-        try
+        if (string.IsNullOrWhiteSpace(_emailSettings.SmtpServer) ||
+            _emailSettings.SmtpPort is < 1 or > 65535 ||
+            string.IsNullOrWhiteSpace(_emailSettings.SenderEmail) ||
+            string.IsNullOrWhiteSpace(_emailSettings.Username) ||
+            string.IsNullOrWhiteSpace(_emailSettings.Password))
         {
-            using var smtpClient = new SmtpClient(_emailSettings.SmtpServer)
-            {
-                Port = _emailSettings.SmtpPort,
-                Credentials = new NetworkCredential(
-                    _emailSettings.Username,
-                    _emailSettings.Password),
-                EnableSsl = _emailSettings.EnableSsl
-            };
-
-            var mailMessage = new MailMessage
-            {
-                From = new MailAddress(
-                    _emailSettings.SenderEmail,
-                    _emailSettings.SenderName),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
-
-            mailMessage.To.Add(recipientEmail);
-
-            await smtpClient.SendMailAsync(mailMessage);
-
-            _logger.LogInformation(
-                "Email sent successfully to {Recipient} with subject: {Subject}",
-                recipientEmail,
-                subject);
+            throw new InvalidOperationException(
+                "SMTP server, sender, username, and password must be configured to send email.");
         }
-        catch (Exception ex)
+
+        using var smtpClient = new SmtpClient(_emailSettings.SmtpServer)
         {
-            _logger.LogError(
-                ex,
-                "Failed to send email to {Recipient} with subject: {Subject}",
-                recipientEmail,
-                subject);
-            
-        }
+            Port = _emailSettings.SmtpPort,
+            Credentials = new NetworkCredential(
+                _emailSettings.Username,
+                _emailSettings.Password),
+            EnableSsl = _emailSettings.EnableSsl
+        };
+
+        using var mailMessage = new MailMessage
+        {
+            From = new MailAddress(
+                _emailSettings.SenderEmail,
+                _emailSettings.SenderName),
+            Subject = subject,
+            Body = body,
+            IsBodyHtml = true
+        };
+
+        mailMessage.To.Add(recipientEmail);
+        await smtpClient.SendMailAsync(mailMessage);
+
+        _logger.LogInformation(
+            "Email sent successfully to {Recipient} with subject: {Subject}",
+            recipientEmail,
+            subject);
     }
 }
