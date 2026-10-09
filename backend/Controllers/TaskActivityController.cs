@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TaskMaster.Services;
+using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Controllers;
 
@@ -9,9 +9,9 @@ namespace TaskMaster.Controllers;
 [Authorize]
 public class TaskActivityController : ControllerBase
 {
-    private readonly ActivityLogService _service;
+    private readonly IActivityLogService _service;
 
-    public TaskActivityController(ActivityLogService service)
+    public TaskActivityController(IActivityLogService service)
     {
         _service = service;
     }

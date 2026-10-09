@@ -1,10 +1,11 @@
 using TaskMaster.DTOs;
 using TaskMaster.Models;
 using TaskMaster.Repositories.Interfaces;
+using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Services;
 
-public class ActivityLogService
+public class ActivityLogService : IActivityLogService
 {
     private readonly IActivityLogRepository _repo;
 

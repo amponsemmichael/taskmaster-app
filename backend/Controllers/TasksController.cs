@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TaskMaster.DTOs.Tasks;
 using TaskMaster.Extensions;
-using TaskMaster.Models;
 using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Controllers;
@@ -20,24 +19,27 @@ public class TasksController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(TaskItem task)
+    public async Task<IActionResult> Create(CreateTaskDto dto)
     {
         var userId = User.GetUserId();
-        var createdTask = await _taskService.CreateAsync(task, userId);
+        var createdTask = await _taskService.CreateAsync(dto, userId);
         return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, createdTask);
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var tasks = await _taskService.GetAllAsync();
+        var tasks = await _taskService.GetAllAsync(
+            User.IsInRole("ADMIN") ? null : User.GetUserId());
         return Ok(tasks);
     }
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var task = await _taskService.GetByIdAsync(id);
+        var task = await _taskService.GetByIdAsync(
+            id,
+            User.IsInRole("ADMIN") ? null : User.GetUserId());
         if (task == null)
             return NotFound(new { message = $"Task with ID {id} not found" });
 
@@ -48,7 +50,8 @@ public class TasksController : ControllerBase
     public async Task<IActionResult> Update(Guid id, UpdateTaskDto dto)
     {
         var userId = User.GetUserId();
-        var updatedTask = await _taskService.UpdateAsync(id, dto, userId);
+        var updatedTask = await _taskService.UpdateAsync(
+            id, dto, userId, User.IsInRole("ADMIN"));
         return Ok(updatedTask);
     }
 
@@ -56,7 +59,7 @@ public class TasksController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         var userId = User.GetUserId();
-        await _taskService.DeleteAsync(id, userId);
+        await _taskService.DeleteAsync(id, userId, User.IsInRole("ADMIN"));
         return NoContent();
     }
 
@@ -64,7 +67,11 @@ public class TasksController : ControllerBase
     [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> Assign(Guid id, AssignedTaskDto dto)
     {
-        await _taskService.AssignAsync(id, dto.UserId);
+        if (dto.UserId == Guid.Empty)
+            return BadRequest(new { message = "UserId must be a non-empty GUID" });
+
+        var assignedByUserId = User.GetUserId();
+        await _taskService.AssignAsync(id, dto.UserId, assignedByUserId);
         return NoContent();
     }
 
@@ -77,7 +84,12 @@ public class TasksController : ControllerBase
         [FromQuery] int pageSize = 10)
     {
         var tasks = await _taskService.FilterAsync(
-            status, priority, dueBefore, page, pageSize);
+            status,
+            priority,
+            dueBefore,
+            page,
+            pageSize,
+            User.IsInRole("ADMIN") ? null : User.GetUserId());
         return Ok(tasks);
     }
 
@@ -89,7 +101,11 @@ public class TasksController : ControllerBase
         if (string.IsNullOrWhiteSpace(q))
             return BadRequest(new { message = "Search term is required" });
 
-        var userId = myTasks ? User.GetUserId() : (Guid?)null;
+        if (q.Length > 200)
+            return BadRequest(new { message = "Search term must not exceed 200 characters" });
+
+        var isAdmin = User.IsInRole("ADMIN");
+        Guid? userId = isAdmin && !myTasks ? null : User.GetUserId();
         var tasks = await _taskService.SearchAsync(q, userId);
         return Ok(tasks);
     }

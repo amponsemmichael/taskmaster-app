@@ -21,16 +21,31 @@ public class TaskRepository : ITaskRepository
         return task;
     }
 
-    public async Task<TaskItem?> GetByIdAsync(Guid id)
+    public async Task<TaskItem?> GetByIdAsync(Guid id, Guid? accessibleToUserId = null)
     {
-        return await _context.Tasks
-            .Include(t => t.Comments)
+        var query = _context.Tasks.AsQueryable();
+        if (accessibleToUserId.HasValue)
+        {
+            var userId = accessibleToUserId.Value;
+            query = query.Where(t =>
+                t.CreatedByUserId == userId || t.AssignedToUserId == userId);
+        }
+
+        return await query.Include(t => t.Comments)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    public async Task<IEnumerable<TaskItem>> GetAllAsync()
+    public async Task<IEnumerable<TaskItem>> GetAllAsync(Guid? accessibleToUserId = null)
     {
-        return await _context.Tasks
+        var query = _context.Tasks.AsQueryable();
+        if (accessibleToUserId.HasValue)
+        {
+            var userId = accessibleToUserId.Value;
+            query = query.Where(t =>
+                t.CreatedByUserId == userId || t.AssignedToUserId == userId);
+        }
+
+        return await query
             .OrderByDescending(t => t.CreatedAt)
             .ToListAsync();
     }
@@ -52,9 +67,17 @@ public class TaskRepository : ITaskRepository
         string? priority,
         DateTime? dueBefore,
         int page,
-        int pageSize)
+        int pageSize,
+        Guid? accessibleToUserId = null)
     {
         var query = _context.Tasks.AsQueryable();
+
+        if (accessibleToUserId.HasValue)
+        {
+            var userId = accessibleToUserId.Value;
+            query = query.Where(t =>
+                t.CreatedByUserId == userId || t.AssignedToUserId == userId);
+        }
 
         if (!string.IsNullOrEmpty(status))
             query = query.Where(t => t.Status == status.ToUpper());
@@ -69,6 +92,34 @@ public class TaskRepository : ITaskRepository
             .OrderByDescending(t => t.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .ToListAsync();
+    }
+
+    public Task<bool> UserCanAccessTaskAsync(Guid taskId, Guid userId)
+    {
+        return _context.Tasks.AnyAsync(task =>
+            task.Id == taskId &&
+            (task.CreatedByUserId == userId || task.AssignedToUserId == userId));
+    }
+
+    public Task<List<TaskItem>> GetTasksDueSoonAsync(DateTime now, DateTime tomorrow)
+    {
+        return _context.Tasks
+            .Where(task => task.DueDate.HasValue &&
+                           task.DueDate.Value > now &&
+                           task.DueDate.Value <= tomorrow &&
+                           task.Status != "COMPLETED" &&
+                           task.AssignedToUserId != null)
+            .ToListAsync();
+    }
+
+    public Task<List<TaskItem>> GetOverdueTasksAsync(DateTime now)
+    {
+        return _context.Tasks
+            .Where(task => task.DueDate.HasValue &&
+                           task.DueDate.Value < now &&
+                           task.Status != "COMPLETED" &&
+                           task.AssignedToUserId != null)
             .ToListAsync();
     }
 
