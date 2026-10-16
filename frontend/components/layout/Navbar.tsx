@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
@@ -16,7 +17,17 @@ export function Navbar() {
         {user && (
           <span className="text-sm text-gray-600">{user.email}</span>
         )}
-        <Button variant="outline" size="sm" onClick={logout}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            void logout().catch(() =>
+              toast.error(
+                "Unable to revoke the server session. You have been signed out on this device."
+              )
+            )
+          }
+        >
           Logout
         </Button>
       </div>

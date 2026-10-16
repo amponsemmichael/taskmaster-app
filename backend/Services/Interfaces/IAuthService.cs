@@ -4,6 +4,8 @@ namespace TaskMaster.Services;
 
 public interface IAuthService
 {
-    Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request);
-    Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
+    Task<AuthTokensDto> RegisterAsync(RegisterRequestDto request);
+    Task<AuthTokensDto> LoginAsync(LoginRequestDto request);
+    Task<AuthTokensDto> RefreshAsync(string refreshToken);
+    Task RevokeAsync(string refreshToken);
 }

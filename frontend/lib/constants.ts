@@ -1,4 +1,4 @@
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:5283/api";
 
 export const TASK_STATUSES = ["PENDING", "IN_PROGRESS", "COMPLETED"] as const;
 export const TASK_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;

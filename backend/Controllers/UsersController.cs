@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TaskMaster.Extensions;
 using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Controllers;
@@ -17,6 +18,7 @@ public class UsersController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "ADMIN")]
     public async Task<IActionResult> GetAll()
     {
         var users = await _userService.GetAllUsersAsync();
@@ -26,6 +28,9 @@ public class UsersController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(Guid id)
     {
+        if (!User.IsInRole("ADMIN") && User.GetUserId() != id)
+            return NotFound(new { message = $"User with ID {id} not found" });
+
         var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
             return NotFound(new { message = $"User with ID {id} not found" });

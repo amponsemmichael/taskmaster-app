@@ -1,18 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using TaskMaster.DTOs;
-using TaskMaster.Services;
 using TaskMaster.Extensions;
+using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Controllers;
+
 [ApiController]
 [Route("api/tasks/{taskId}/comments")]
 [Authorize]
 public class TaskCommentsController : ControllerBase
 {
-    private readonly TaskCommentService _service;
+    private readonly ITaskCommentService _service;
 
-    public TaskCommentsController(TaskCommentService service)
+    public TaskCommentsController(ITaskCommentService service)
     {
         _service = service;
     }
@@ -22,15 +23,16 @@ public class TaskCommentsController : ControllerBase
         Guid taskId,
         CreateCommentDto dto)
     {
-        var userId = User.GetUserId(); 
-        await _service.AddCommentAsync(taskId, userId, dto);
+        var userId = User.GetUserId();
+        await _service.AddCommentAsync(taskId, userId, User.IsInRole("ADMIN"), dto);
         return NoContent();
     }
 
     [HttpGet]
     public async Task<IActionResult> GetComments(Guid taskId)
     {
-        var comments = await _service.GetCommentsAsync(taskId);
+        var comments = await _service.GetCommentsAsync(
+            taskId, User.GetUserId(), User.IsInRole("ADMIN"));
         return Ok(comments);
     }
 }

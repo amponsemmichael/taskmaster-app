@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using TaskMaster.Data;
 using TaskMaster.Models;
+using TaskMaster.Repositories.Interfaces;
 
-namespace TaskMaster.Repositories.Interfaces;
+namespace TaskMaster.Repositories;
+
 public class TaskCommentRepository : ITaskCommentRepository
 {
     private readonly AppDbContext _context;

@@ -43,6 +43,7 @@ export function TaskDetails({ task, onTaskUpdated }: TaskDetailsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [assignUserId, setAssignUserId] = useState(task.assignedToUserId ?? "");
   const [isAssigning, setIsAssigning] = useState(false);
+  const [commentRefreshKey, setCommentRefreshKey] = useState(0);
 
   const overdue = task.status !== "COMPLETED" && isOverdue(task.dueDate);
 
@@ -174,8 +175,11 @@ export function TaskDetails({ task, onTaskUpdated }: TaskDetailsProps) {
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
         <TabsContent value="comments" className="space-y-4 pt-4">
-          <CommentList comments={task.comments ?? []} />
-          <CommentForm taskId={task.id} />
+          <CommentList taskId={task.id} refreshKey={commentRefreshKey} />
+          <CommentForm
+            taskId={task.id}
+            onAdded={() => setCommentRefreshKey((key) => key + 1)}
+          />
         </TabsContent>
         <TabsContent value="activity" className="pt-4">
           <ActivityLog taskId={task.id} />

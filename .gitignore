@@ -1,4 +1,3 @@
-cat > .gitignore << 'EOF'
 # .NET
 bin/
 obj/
@@ -32,4 +31,11 @@ Thumbs.db
 
 # Environment
 .env
-EOF
+.env.*
+!.env.example
+
+# Local secret-bearing configuration
+appsettings.Local.json
+appsettings.Secrets.json
+appsettings.*.Local.json
+appsettings.*.Secrets.json

@@ -1,49 +1,30 @@
-using Microsoft.EntityFrameworkCore;
-using TaskMaster.Data;
 using TaskMaster.DTOs.Users;
+using TaskMaster.Repositories.Interfaces;
 using TaskMaster.Services.Interfaces;
 
 namespace TaskMaster.Services;
 
 public class UserService : IUserService
 {
-    private readonly AppDbContext _context;
+    private readonly IUserRepository _userRepository;
 
-    public UserService(AppDbContext context)
+    public UserService(IUserRepository userRepository)
     {
-        _context = context;
+        _userRepository = userRepository;
     }
 
     public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
     {
-        return await _context.Users
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Email = u.Email,
-                Role = u.Role,
-                CreatedAt = u.CreatedAt
-            })
-            .OrderBy(u => u.Email)
-            .ToListAsync();
+        return await _userRepository.GetAllAsync();
     }
 
     public async Task<UserDto?> GetUserByIdAsync(Guid id)
     {
-        return await _context.Users
-            .Where(u => u.Id == id)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Email = u.Email,
-                Role = u.Role,
-                CreatedAt = u.CreatedAt
-            })
-            .FirstOrDefaultAsync();
+        return await _userRepository.GetByIdAsync(id);
     }
 
     public async Task<bool> UserExistsAsync(Guid id)
     {
-        return await _context.Users.AnyAsync(u => u.Id == id);
+        return await _userRepository.ExistsAsync(id);
     }
 }
